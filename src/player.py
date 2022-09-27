@@ -14,11 +14,13 @@ class Player(pygame.sprite.Sprite):
         self.frame_index = 0
 
         # general setup
-        self.image = self.animations[self.status][self.frame_index]
+        self.image = pygame.Surface((32, 64))
+        self.image.fill('green')
         self.rect = self.image.get_rect(center=pos)
 
         # movement attributes
         self.direction = pygame.math.Vector2()
+        # self.pos = pygame.math.Vector2(self.rect.center)
         self.pos = pygame.math.Vector2(self.rect.center)
         self.speed = 200
 
@@ -80,7 +82,7 @@ class Player(pygame.sprite.Sprite):
         self.update_status()
 
         self.move(dt)
-        self.animate(dt)
+#        self.animate(dt)
 
     def change_status(self, new_status):
         self.status = self.status.split('_')[0] + new_status

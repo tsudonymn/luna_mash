@@ -18,7 +18,7 @@ class Level:
         self.setup()
 
     def setup(self):
-        self.player = Player((1296, 1080), self.all_sprites)
+        self.player = Player((SCREEN_WIDTH/2, SCREEN_HEIGHT/2), self.all_sprites)
         self.terrain_list = self.build_terrain_list(100, 100, 64, 64)
 
     def run(self, dt):
