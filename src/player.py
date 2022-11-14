@@ -1,8 +1,12 @@
 import pygame
+from icecream import ic
 from settings import *
+from src.movement import is_within_horz_bounds
 from support import *
 
 IDLE = '_idle'
+
+
 
 
 class Player(pygame.sprite.Sprite):
@@ -70,8 +74,11 @@ class Player(pygame.sprite.Sprite):
             self.direction = self.direction.normalize()
 
         # horizontal movement
-        self.pos.x += self.direction.x * self.speed * dt
-        self.rect.centerx = self.pos.x
+        ic(self.rect)
+        ic(SCREEN_WIDTH)
+        if self.within_horz_bounds():
+            self.pos.x += self.direction.x * self.speed * dt
+            self.rect.centerx = self.pos.x
 
         # vertical movement
         self.pos.y += self.direction.y * self.speed * dt
@@ -82,7 +89,11 @@ class Player(pygame.sprite.Sprite):
         self.update_status()
 
         self.move(dt)
-#        self.animate(dt)
+
+    #        self.animate(dt)
 
     def change_status(self, new_status):
         self.status = self.status.split('_')[0] + new_status
+
+    def within_horz_bounds(self):
+        return is_within_horz_bounds(self.rect)
