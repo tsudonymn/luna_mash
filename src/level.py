@@ -1,48 +1,50 @@
 import pygame
-from player import Player
-from settings import *
 
-from src.platform import Platform
+from src.settings import BLUE
 
 
 class Level:
-    def __init__(self):
-        # get the display surface
-        self.terrain_list = None
-        self.player = None
-        self.display_surface = pygame.display.get_surface()
+    """ This is a generic super-class used to define a level.
+        Create a child class for each level with level-specific
+        info. """
 
-        # sprite groups
-        self.all_sprites = pygame.sprite.Group()
+    def __init__(self, player):
+        """ Constructor. Pass in a handle to player. Needed for when moving
+            platforms collide with the player. """
+        self.platform_list = pygame.sprite.Group()
+        self.enemy_list = pygame.sprite.Group()
+        self.player = player
 
-        self.setup()
+        # How far this world has been scrolled left/right
+        self.world_shift = 0
 
-    def setup(self):
-        self.player = Player((SCREEN_WIDTH/2, SCREEN_HEIGHT/2), self.all_sprites)
-        self.terrain_list = self.build_terrain_list(100, 100, 64, 64)
+    # Update everythign on this level
+    def update(self):
+        """ Update everything in this level."""
+        self.platform_list.update()
+        self.enemy_list.update()
 
-    def run(self, dt):
-        self.display_surface.fill('black')
-        self.all_sprites.draw(self.display_surface)
-        self.all_sprites.update(dt)
+    def draw(self, screen):
+        """ Draw everything on this level. """
 
-    @staticmethod
-    def build_terrain_list(x, y, w, h):
-        ground_list = pygame.sprite.Group()
+        # Draw the background
+        screen.fill(BLUE)
 
-        ground = Platform(x, y, w, h, 'platformPack_tile016.png')
-        ground_list.add(ground)
+        # Draw all the sprite lists that we have
+        self.platform_list.draw(screen)
+        self.enemy_list.draw(screen)
 
-        return ground_list
+    def shift_world(self, shift_x):
+        """ When the user moves left/right and we need to scroll
+        everything: """
 
-    def platform(self, lvl):
-        plat_list = pygame.sprite.Group()
-        if lvl == 1:
-            plat = Platform(200, SCREEN_WIDTH - 97 - 128, 285, 67, 'platformPack_tile016.png')
-            plat_list.add(plat)
-            plat = Platform(500, SCREEN_HEIGHT - 97 - 320, 197, 54, 'platformPack_tile016.png')
-            plat_list.add(plat)
-        if lvl == 2:
-            print("Level " + str(lvl))
+        # Keep track of the shift amount
+        self.world_shift += shift_x
 
-        return plat_list
+        # Go through all the sprite lists and shift
+        for platform in self.platform_list:
+            platform.rect.x += shift_x
+
+        for enemy in self.enemy_list:
+            enemy.rect.x += shift_x
+

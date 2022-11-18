@@ -1,99 +1,109 @@
 import pygame
-from icecream import ic
-from settings import *
-from src.movement import is_within_horz_bounds
-from support import *
 
-IDLE = '_idle'
-
-
+from src.settings import SCREEN_HEIGHT, RED
 
 
 class Player(pygame.sprite.Sprite):
-    def __init__(self, pos, group):
-        super().__init__(group)
+    """
+    This class represents the bar at the bottom that the player controls.
+    """
 
-        self.animations = None
-        self.status = 'down_idle'
-        self.frame_index = 0
+    # -- Methods
+    def __init__(self):
+        """ Constructor function """
 
-        # general setup
-        self.image = pygame.Surface((32, 64))
-        self.image.fill('green')
-        self.rect = self.image.get_rect(center=pos)
+        # Call the parent's constructor
+        super().__init__()
 
-        # movement attributes
-        self.direction = pygame.math.Vector2()
-        # self.pos = pygame.math.Vector2(self.rect.center)
-        self.pos = pygame.math.Vector2(self.rect.center)
-        self.speed = 200
+        # Create an image of the block, and fill it with a color.
+        # This could also be an image loaded from the disk.
+        width = 40
+        height = 60
+        self.image = pygame.Surface([width, height])
+        self.image.fill(RED)
 
-    def animate(self, dt):
-        self.frame_index += 4 * dt
-        if self.frame_index >= len(self.animations[self.status]):
-            self.frame_index = 0
+        # Set a referance to the image rect.
+        self.rect = self.image.get_rect()
 
-        self.image = self.animations[self.status][int(self.frame_index)]
+        # Set speed vector of player
+        self.change_x = 0
+        self.change_y = 0
 
-    def input(self):
-        keys = pygame.key.get_pressed()
+        # List of sprites we can bump against
+        self.level = None
 
-        if keys[pygame.K_UP]:
-            self.direction.y = -1
-            self.status = 'up'
-        elif keys[pygame.K_DOWN]:
-            self.direction.y = 1
-            self.status = 'down'
+    def update(self):
+        """ Move the player. """
+        # Gravity
+        self.calc_grav()
+
+        # Move left/right
+        self.rect.x += self.change_x
+
+        # See if we hit anything
+        block_hit_list = pygame.sprite.spritecollide(self, self.level.platform_list, False)
+        for block in block_hit_list:
+            # If we are moving right,
+            # set our right side to the left side of the item we hit
+            if self.change_x > 0:
+                self.rect.right = block.rect.left
+            elif self.change_x < 0:
+                # Otherwise if we are moving left, do the opposite.
+                self.rect.left = block.rect.right
+
+        # Move up/down
+        self.rect.y += self.change_y
+
+        # Check and see if we hit anything
+        block_hit_list = pygame.sprite.spritecollide(self, self.level.platform_list, False)
+        for block in block_hit_list:
+
+            # Reset our position based on the top/bottom of the object.
+            if self.change_y > 0:
+                self.rect.bottom = block.rect.top
+            elif self.change_y < 0:
+                self.rect.top = block.rect.bottom
+
+            # Stop our vertical movement
+            self.change_y = 0
+
+    def calc_grav(self):
+        """ Calculate effect of gravity. """
+        if self.change_y == 0:
+            self.change_y = 1
         else:
-            self.direction.y = 0
+            self.change_y += .35
 
-        if keys[pygame.K_RIGHT]:
-            self.direction.x = 1
-            self.status = 'right'
-        elif keys[pygame.K_LEFT]:
-            self.direction.x = -1
-            self.status = 'left'
-        else:
-            self.direction.x = 0
+        # See if we are on the ground.
+        if self.rect.y >= SCREEN_HEIGHT - self.rect.height and self.change_y >= 0:
+            self.change_y = 0
+            self.rect.y = SCREEN_HEIGHT - self.rect.height
 
-    def update_status(self):
-        if self.is_idle():
-            self.change_status(IDLE)
+    def jump(self):
+        """ Called when user hits 'jump' button. """
 
-    # tool use
+        # move down a bit and see if there is a platform below us.
+        # Move down 2 pixels because it doesn't work well if we only move down 1
+        # when working with a platform moving down.
+        self.rect.y += 2
+        platform_hit_list = pygame.sprite.spritecollide(self, self.level.platform_list, False)
+        self.rect.y -= 2
 
-    def is_moving(self) -> bool:
-        return self.direction.magnitude() > 0
+        # If it is ok to jump, set our speed upwards
+        if len(platform_hit_list) > 0 or self.rect.bottom >= SCREEN_HEIGHT:
+            self.change_y = -10
 
-    def is_idle(self) -> bool:
-        return self.direction.magnitude() == 0
+    # Player-controlled movement:
+    def go_left(self):
+        """ Called when the user hits the left arrow. """
+        self.change_x = -6
 
-    def move(self, dt):
-        # normalizing a vector
-        if self.is_moving():
-            self.direction = self.direction.normalize()
+    def go_right(self):
+        """ Called when the user hits the right arrow. """
+        self.change_x = 6
 
-        # horizontal movement
-        ic(self.rect)
-        ic(SCREEN_WIDTH)
-        if self.within_horz_bounds():
-            self.pos.x += self.direction.x * self.speed * dt
-            self.rect.centerx = self.pos.x
+    def stop(self):
+        """ Called when the user lets off the keyboard. """
+        self.change_x = 0
 
-        # vertical movement
-        self.pos.y += self.direction.y * self.speed * dt
-        self.rect.centery = self.pos.y
 
-    def update(self, dt):
-        self.input()
-        self.update_status()
-
-        self.move(dt)
-
-    #        self.animate(dt)
-
-    def change_status(self, new_status):
-        self.status = self.status.split('_')[0] + new_status
-
-    def within_horz_bounds(self):
-        return is_within_horz_bounds(self.rect)
