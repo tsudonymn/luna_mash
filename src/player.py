@@ -19,8 +19,10 @@ class Player(pygame.sprite.Sprite):
         # This could also be an image loaded from the disk.
         width = 40
         height = 60
-        self.image = pygame.Surface([width, height])
-        self.image.fill(RED)
+        # self.image = pygame.Surface([width, height])
+        IMAGE = pygame.image.load('robot.png').convert_alpha()
+        self.image = IMAGE
+        # self.image.fill(RED)
 
         # Set a referance to the image rect.
         self.rect = self.image.get_rect()
