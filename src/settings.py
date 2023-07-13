@@ -1,7 +1,7 @@
 # screen
 SCREEN_WIDTH = 2160
 SCREEN_HEIGHT = 1080
-TILE_SIZE = 64
+TILE_SIZE = 54
 
 # Colors
 BLACK = (0, 0, 0)

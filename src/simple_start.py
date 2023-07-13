@@ -2,17 +2,18 @@ import pygame
 from pygame.locals import *
 
 from src.player import Player
+from src.settings import SCREEN_WIDTH, SCREEN_HEIGHT, TILE_SIZE
 
 pygame.init()
 
-screen_width = 2160
-screen_height = 1080
+screen_width = SCREEN_WIDTH
+screen_height = SCREEN_HEIGHT
 
 screen = pygame.display.set_mode((screen_width, screen_height))
 pygame.display.set_caption('Luna Mash')
 
 # define game variables
-tile_size = 54
+tile_size = TILE_SIZE
 
 # load images
 sun_img = pygame.image.load('assets/sun.png')
@@ -87,6 +88,7 @@ world_data = [
 
 world = World(world_data)
 player = Player()
+player.level.platform_list = world.tile_list
 
 player.rect.x = 340
 player.rect.y = screen_height - player.rect.height - tile_size

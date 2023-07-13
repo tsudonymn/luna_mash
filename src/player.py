@@ -57,17 +57,17 @@ class Player(pygame.sprite.Sprite):
         self.rect.y += self.change_y
 
         # Check and see if we hit anything
-        # block_hit_list = pygame.sprite.spritecollide(self, self.level.platform_list, False)
-        # for block in block_hit_list:
-        #
-        #     # Reset our position based on the top/bottom of the object.
-        #     if self.change_y > 0:
-        #         self.rect.bottom = block.rect.top
-        #     elif self.change_y < 0:
-        #         self.rect.top = block.rect.bottom
-        #
-        #     # Stop our vertical movement
-        #     self.change_y = 0
+        block_hit_list = pygame.sprite.spritecollide(self, self.level.platform_list, False)
+        for block in block_hit_list:
+
+            # Reset our position based on the top/bottom of the object.
+            if self.change_y > 0:
+                self.rect.bottom = block.rect.top
+            elif self.change_y < 0:
+                self.rect.top = block.rect.bottom
+
+            # Stop our vertical movement
+            self.change_y = 0
 
     def calc_grav(self):
         """ Calculate effect of gravity. """
